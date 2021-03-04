@@ -80,7 +80,11 @@ var _ = Describe("Equal", func() {
 			failures := InterceptGomegaFailures(func() {
 				Expect(actual).To(gproto.Equal(expected))
 			})
-			Expect(failures).To(ConsistOf("Expected\n    <string>: seconds: 1234567890\n    \nto equal\n    <string>: seconds: 9876543210\n    \nMismatch (-want +got)\n    \u00a0\u00a0(*timestamppb.Timestamp)(Inverse(protocmp.Transform, protocmp.Message{\n    \u00a0\u00a0\t\"@type\":   s\"google.protobuf.Timestamp\",\n    -\u00a0\t\"seconds\": int64(1234567890),\n    +\u00a0\t\"seconds\": int64(9876543210),\n    \u00a0\u00a0}))\n    "))
+			Expect(failures).To(ConsistOf(And(
+				MatchRegexp("Expected\n\\s+<string>: seconds:\\s+1234567890\n\\s+\nto equal\n\\s+<string>: seconds:\\s+9876543210"),
+				MatchRegexp("(\\s|\u00a0)+-(\\s|\u00a0)+\"seconds\": int64\\(1234567890\\),"),
+				MatchRegexp("(\\s|\u00a0)+\\+(\\s|\u00a0)+\"seconds\": int64\\(9876543210\\),"),
+			)))
 		})
 
 		It("should show a negated failure when the messages are equal", func() {
@@ -94,7 +98,7 @@ var _ = Describe("Equal", func() {
 			failures := InterceptGomegaFailures(func() {
 				Expect(actual).ToNot(gproto.Equal(expected))
 			})
-			Expect(failures).To(ConsistOf("Expected\n    <string>: seconds: 1234567890\n    \nnot to equal\n    <string>: seconds: 1234567890\n    "))
+			Expect(failures).To(ConsistOf(MatchRegexp("Expected\n\\s+<string>: seconds:\\s+1234567890\n\\s+\nnot to equal\n\\s+<string>: seconds:\\s+1234567890")))
 		})
 	})
 })
